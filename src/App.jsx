@@ -72,7 +72,7 @@ function Search({ query, setQuery }) {
     <input
       type='text'
       className='search'
-      placeholder='Search'
+      placeholder='Search for your favorite movie :)'
       value={query}
       onChange={(e) => setQuery(e.target.value)}
       ref={inputElement}
