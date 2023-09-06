@@ -6,7 +6,7 @@ export function useMovies(query) {
 
   useEffect(
     function () {
-      fetch(`http://www.omdbapi.com/?apikey=${key}&s=${query}`)
+      fetch(`https://www.omdbapi.com/?apikey=${key}&s=${query}`)
         .then((res) => {
           if (!res.ok) {
             throw new Error("Network response was not ok");
