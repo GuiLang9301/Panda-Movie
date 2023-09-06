@@ -136,7 +136,7 @@ function MovieDetail({ selectedID, setWatched, watched }) {
   const [myRating, setMyRating] = useState();
   useEffect(
     function () {
-      fetch(`http://www.omdbapi.com/?apikey=${key}&i=${selectedID}`)
+      fetch(`https://www.omdbapi.com/?apikey=${key}&i=${selectedID}`)
         .then((res) => res.json())
         .then((data) => setMovieDetail(data));
     },
