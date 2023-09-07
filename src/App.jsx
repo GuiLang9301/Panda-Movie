@@ -203,7 +203,7 @@ function WatchedList({ watched, setWatched }) {
   if (rank === "myRating") {
     copy = watched.slice(0).sort((a, b) => b.myRating - a.myRating);
   } else if (rank === "imdbRating") {
-    copy = watched.slice(0).sort((a, b) => b.imdbRating - a.imdb);
+    copy = watched.slice(0).sort((a, b) => b.imdbRating - a.imdbRating);
   } else if (rank === "default") {
     copy = watched;
   } else if (rank === "aTOz") {
