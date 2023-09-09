@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import StarRating from "./StarRating";
 import { useMovies } from "./useMovies";
 import { useLocalStorageState } from "./useLocalStorageState";
+import { useMovieDetail } from "./useMovieDetail";
 //step 1: create the layout
 //step 2: add api data
 //step 3: make movie box work
@@ -9,20 +10,12 @@ import { useLocalStorageState } from "./useLocalStorageState";
 
 //step 5:make the watched list work
 //step 6: make the summary list worl
-const key = "f68c0928";
 
 export default function App() {
   const [watched, setWatched] = useLocalStorageState([], "watched");
   const [query, setQuery] = useState("");
-
   const [selectedID, setSelectedID] = useState(null);
-
-  const movies = useMovies(query);
-
-  // console.log(isLoading);
-  //remember to add state variable as dependancy if you want to function in useeffect
-  //get executed everytime the state changes.
-
+  const { movies, isInitialLoading } = useMovies(query);
   return (
     <>
       <Navbar>
@@ -32,7 +25,11 @@ export default function App() {
       </Navbar>
       <Main>
         <Box>
-          <MovieList movies={movies} setSelectedID={setSelectedID} />
+          <MovieList
+            movies={movies}
+            setSelectedID={setSelectedID}
+            isInitialLoading={isInitialLoading}
+          />
         </Box>
         <Box>
           <MovieDetail
@@ -72,7 +69,7 @@ function Search({ query, setQuery }) {
     <input
       type='text'
       className='search'
-      placeholder='Search'
+      placeholder='Search for your favorite movie :)'
       value={query}
       onChange={(e) => setQuery(e.target.value)}
       ref={inputElement}
@@ -96,7 +93,7 @@ function Box({ children }) {
   return <div className='box bg-black p-4'>{children}</div>;
 }
 
-function MovieList({ movies, setSelectedID, isLoading }) {
+function MovieList({ movies, setSelectedID, isInitialLoading }) {
   function handleSelected(id) {
     setSelectedID(id);
   }
@@ -112,7 +109,7 @@ function MovieList({ movies, setSelectedID, isLoading }) {
   return (
     <div>
       <h1 className='p-2 text-warning'>Search List</h1>
-      {movieElments}
+      {isInitialLoading ? <div>is Loading</div> : movieElments}
     </div>
   );
 }
@@ -132,16 +129,8 @@ function Movie({ movie, handleSelected }) {
 }
 
 function MovieDetail({ selectedID, setWatched, watched }) {
-  const [movieDetail, setMovieDetail] = useState();
   const [myRating, setMyRating] = useState();
-  useEffect(
-    function () {
-      fetch(`http://www.omdbapi.com/?apikey=${key}&i=${selectedID}`)
-        .then((res) => res.json())
-        .then((data) => setMovieDetail(data));
-    },
-    [selectedID]
-  );
+  const { movieDetail, isInitialLoading } = useMovieDetail(selectedID);
 
   function handleWatched(id) {
     const movieExists = watched.some((movie) => movie.imdbID === id);
@@ -161,37 +150,43 @@ function MovieDetail({ selectedID, setWatched, watched }) {
     <div>
       <h1 className='p-2 text-warning'>Movie Detail</h1>
 
-      {movieDetail && movieDetail.Response !== "False" && (
-        <div className='details '>
-          {/* <button onClick={() => setMovieDetail("")} className='btn btn-back'>
-            &larr;
-          </button> */}
-          <div className='d-flex '>
-            <img src={movieDetail.Poster} className='object-fit-cover' />
-            <div className='details-overview'>
-              <h2 className='fw-bold'>{movieDetail.Title}</h2>
-              <h4 className='fw-light'>{movieDetail.Released}</h4>
-              <h4 className='fw-light'>{movieDetail.Genre}</h4>
-              <h4 className='fw-light'>
-                IMDB Rating: {movieDetail.imdbRating}
-              </h4>
-              <h4 className='fw-light'>Box Office: {movieDetail.BoxOffice}</h4>
+      {selectedID &&
+        (isInitialLoading ? (
+          <div>is Loading</div>
+        ) : (
+          <div className='details '>
+            <div className='d-flex '>
+              <img src={movieDetail.Poster} className='object-fit-cover' />
+              <div className='details-overview'>
+                <h2 className='fw-bold'>{movieDetail.Title}</h2>
+                <h4 className='fw-light'>{movieDetail.Released}</h4>
+                <h4 className='fw-light'>{movieDetail.Genre}</h4>
+                <h4 className='fw-light'>
+                  IMDB Rating: {movieDetail.imdbRating}
+                </h4>
+                <h4 className='fw-light'>
+                  Box Office: {movieDetail.BoxOffice}
+                </h4>
+              </div>
             </div>
+            <StarRating
+              maxRating={10}
+              color='yellow'
+              setRating2={setMyRating}
+            />
+            <div className='d-flex flex-column gap-2 m-5'>
+              <p>{movieDetail.Plot}</p>
+              <p>Starring {movieDetail.Actors}</p>
+              <p>Directed by {movieDetail.Director}</p>
+            </div>
+            <button
+              onClick={() => handleWatched(movieDetail.imdbID)}
+              className='btn-add'
+            >
+              Add to my list
+            </button>
           </div>
-          <StarRating maxRating={10} color='yellow' setRating2={setMyRating} />
-          <div className='d-flex flex-column gap-2 m-5'>
-            <p>{movieDetail.Plot}</p>
-            <p>Starring {movieDetail.Actors}</p>
-            <p>Directed by {movieDetail.Director}</p>
-          </div>
-          <button
-            onClick={() => handleWatched(movieDetail.imdbID)}
-            className='btn-add'
-          >
-            Add to my list
-          </button>
-        </div>
-      )}
+        ))}
     </div>
   );
 }
@@ -209,7 +204,6 @@ function WatchedList({ watched, setWatched }) {
   } else if (rank === "aTOz") {
     copy = watched.slice(0).sort((a, b) => a.Title.localeCompare(b.Title));
   }
-  console.log(copy, rank);
   function handleDelete(id) {
     setWatched((prev) => prev.filter((movie) => movie.imdbID !== id));
   }

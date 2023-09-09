@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AiFillStar, AiOutlineStar } from "react-icons/ai";
 
-export default function StarRating({ maxRating = 7, setRating2, className }) {
+export default function StarRating({ maxRating = 7, setRating2 }) {
   const [rating, setRating] = useState(0);
 
   const starElements = Array.from({ length: maxRating }, (_, i) => (
